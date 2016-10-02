@@ -11,7 +11,7 @@ $(NAME).o: $(NAME).c
 	$(COMPIL) -c $(FLAG) $(NAME).c
 
 $(NAME): $(NAME).o json_parser.o
-	$(COMPIL) $(FLAG) $(NAME).o -o $(NAME)
+	$(COMPIL) $(FLAG) $(NAME).o json_parser.o -o $(NAME)
 
 clean:
 	rm *.o $(NAME)
