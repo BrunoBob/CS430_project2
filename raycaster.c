@@ -26,16 +26,43 @@ int main(int argc, char *argv[]){
     exit(10);
   }
 
-  double width = atof(argv[1]);
-  double height = atof(argv[2]);
+  double centerX = 0;
+  double centerY = 0;
+
+  int width = atoi(argv[1]);
+  int height = atoi(argv[2]);
+
+  double camWidth, camHeight;
 
   objectList list = NULL;
-  list = parseFile(argv[3], list, &width, &height);
+  list = parseFile(argv[3], list, &camWidth, &camHeight);
 
-  printf("Camera : width = %lf\theight = %lf\n", width, height);
+  double pixWidth = camWidth / width;
+  double pixHeight = camHeight / height;
+
+  printf("\nScene : width = %d\theight = %d\n", width, height);
+  printf("\nCamera : width = %lf\theight = %lf\n\n", camWidth, camHeight);
   printObjects(list);
 
-  FILE* outputFile = fopen(argv[4], "w");
+  int x,y;
+
+  for(y = 0; y < height ; y++){
+    for(x = 0; x < width ; x++){
+      double* Ro = getVector(0, 0, 0);
+      double Rx = centerX - (camWidth/2) + pixWidth * (x+0.5);
+      double Ry = centerY - (camHeight/2) + pixHeight * (y+0.5);
+      double* Rd = getVector(Rx, Ry, 1);
+      normalize(Rd);
+      double bestT = INFINITY;
+      while (list != NULL) {
+        double t=0;
+
+        //Intersection
+      }
+    }
+  }
+
+  //FILE* outputFile = fopen(argv[4], "w");
 
 
   return 0;
