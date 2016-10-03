@@ -6,8 +6,9 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include "raycaster.h"
 
-#define DEBUG
+//#define DEBUG
 
 #define MAX_STRING_LENGHT 128
 #define MAX_OBJECT 128
@@ -26,6 +27,6 @@ double readNumber(FILE* json);
 
 double* ReadVector(FILE* json);
 
-void parseFile(char* filename);
+objectList parseFile(char* filename, objectList list);
 
 #endif

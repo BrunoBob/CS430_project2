@@ -9,7 +9,7 @@ int readChar(FILE* json) {
     printf("%c", c);
   #endif
   if (c == '\n') {
-    line ++;
+    line++;
   }
   if (c == EOF) {
     fprintf(stderr, "Error: Unexpected end of file on line number %d.\n", line);
@@ -76,6 +76,9 @@ void skipSpace(FILE* json){
   int c;
   do{
     c = fgetc(json);
+    if(c == '\n'){
+      line++;
+    }
   } while(isspace(c));
   ungetc(c,json);
 }
@@ -99,7 +102,7 @@ double* ReadVector(FILE* json) {
   return v;
 }
 
-void parseFile(char* filename) {
+objectList parseFile(char* filename, objectList list) {
 
   #ifdef DEBUG
     printf("Starting reading file %s\n", filename);
@@ -108,6 +111,9 @@ void parseFile(char* filename) {
   int c;
   int objectNumber = 0;
   FILE* json = fopen(filename, "r");
+
+  objectList tempList = (objectList)malloc(sizeof(*tempList));
+  list = tempList;
 
   if (json == NULL) {
     fprintf(stderr, "Error: Could not open file \"%s\"\n", filename);
@@ -120,10 +126,10 @@ void parseFile(char* filename) {
   skipSpace(json);
 
   // Find all the objects
-  while (objectNumber <= MAX_OBJECT) {
+  while (objectNumber < MAX_OBJECT) {
     objectNumber++;
     #ifdef DEBUG
-      printf("Reading object number %d\n", objectNumber);
+      printf("\nReading object number %d at line %d\n", objectNumber, line);
     #endif
 
     c = readChar(json);
@@ -150,12 +156,13 @@ void parseFile(char* filename) {
 
       if (strcmp(value, "camera") == 0) {
         //Process camera
+        tempList->kind = -1 ;
       }
       else if (strcmp(value, "sphere") == 0) {
-        //Process sphere
+        tempList->kind = 0 ;
       }
       else if (strcmp(value, "plane") == 0) {
-        //Process plane
+        tempList->kind = 1 ;
       }
       else {
         fprintf(stderr, "Error: Unknown type, \"%s\", on line number %d.\n", value, line);
@@ -179,8 +186,12 @@ void parseFile(char* filename) {
           skipSpace(json);
           expectChar(json, ':');
           skipSpace(json);
+
           if ((strcmp(key, "width") == 0) || (strcmp(key, "height") == 0) || (strcmp(key, "radius") == 0)) {
             double value = readNumber(json);
+            if(strcmp(key, "radius") == 0){
+              tempList->sphere.radius = value;
+            }
           }
           else if ((strcmp(key, "color") == 0) || (strcmp(key, "position") == 0) || (strcmp(key, "normal") == 0)) {
             double* value = ReadVector(json);
@@ -200,7 +211,10 @@ void parseFile(char* filename) {
       skipSpace(json);
       c = readChar(json);
       if (c == ',') {
-        // loop
+        if(tempList->kind != -1){
+          tempList->next = (objectList)malloc(sizeof(*tempList));
+          tempList = tempList->next;
+        }
         skipSpace(json);
       }
       else if (c == ']') {
@@ -208,7 +222,7 @@ void parseFile(char* filename) {
         #ifdef DEBUG
           printf("\nEnd of reading\n");
         #endif
-        return;
+        return list;
       }
       else {
         fprintf(stderr, "Error: Expecting ',' or ']' on line %d.\n", line);
@@ -216,4 +230,6 @@ void parseFile(char* filename) {
       }
     }
   }
+  fprintf(stderr, "Error: Number of object superior to %d.\n", MAX_OBJECT);
+  exit(ERROR_PARSER);
 }

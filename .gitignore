@@ -33,7 +33,7 @@
 *.su
 
 *.cc
-*.json
+/json/*
 raycaster
 temp
 alltest
