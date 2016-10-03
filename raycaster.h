@@ -7,14 +7,14 @@
 
 typedef struct object{
   int kind; // 0 = sphere, 1 = plane
-  double color[3];
-  double center[3];
+  double* color;
+  double* position;
   union {
     struct {
       double radius;
     } sphere;
     struct {
-      double normal[3];
+      double* normal;
     } plane;
   };
   struct object* next;

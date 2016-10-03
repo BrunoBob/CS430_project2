@@ -102,7 +102,7 @@ double* ReadVector(FILE* json) {
   return v;
 }
 
-objectList parseFile(char* filename, objectList list) {
+objectList parseFile(char* filename, objectList list, double* width, double* height) {
 
   #ifdef DEBUG
     printf("Starting reading file %s\n", filename);
@@ -155,7 +155,6 @@ objectList parseFile(char* filename, objectList list) {
       char* value = readString(json);
 
       if (strcmp(value, "camera") == 0) {
-        //Process camera
         tempList->kind = -1 ;
       }
       else if (strcmp(value, "sphere") == 0) {
@@ -192,9 +191,24 @@ objectList parseFile(char* filename, objectList list) {
             if(strcmp(key, "radius") == 0){
               tempList->sphere.radius = value;
             }
+            else if(strcmp(key, "width") == 0){
+              *width = value;
+            }
+            else{
+              *height = value;
+            }
           }
           else if ((strcmp(key, "color") == 0) || (strcmp(key, "position") == 0) || (strcmp(key, "normal") == 0)) {
             double* value = ReadVector(json);
+            if(strcmp(key, "color") == 0){
+              tempList->color = value;
+            }
+            else if(strcmp(key, "position") == 0){
+              tempList->position = value;
+            }
+            else{
+              tempList->plane.normal = value;
+            }
           }
           else {
             fprintf(stderr, "Error: Unknown property, \"%s\", on line %d.\n", key, line);
