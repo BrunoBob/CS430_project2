@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+#define ERROR_RAYCAST 2
+
 typedef struct object{
   int kind; // 0 = sphere, 1 = plane
   double* color;
@@ -22,12 +24,24 @@ typedef struct object{
 
 void printObjects(objectList list);
 
+double planeIntersection(double* Ro, double* Rd, double* position, double* normal);
+
+double sphereIntersection(double* Ro, double* Rd, double* position, double radius);
+
 static inline double* getVector(double x, double y, double z){
   double* v = malloc(3*sizeof(double));
   v[0] = x;
   v[1] = y;
   v[2] = z;
   return v;
+}
+
+static inline double* subVector(double* a, double* b){
+  return getVector(a[0]-b[0], a[1]-b[1], a[2]-b[2]);
+}
+
+static inline double dotProduct(double* a, double* b){
+  return (a[0]*b[0] + a[1]*b[1] + a[2]*b[2]);
 }
 
 static inline double sqr(double v) {

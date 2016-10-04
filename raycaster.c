@@ -20,10 +20,38 @@ void printObjects(objectList list){
   }
 }
 
+double planeIntersection(double* Ro, double* Rd, double* position, double* normal){
+  double t = 0;
+  normalize(normal); //Just in case
+  double denom = dotProduct(normal, Rd);
+  if(sqrt(sqr(denom)) > 0.00001){
+    t = (-dotProduct(subVector(Ro, position), normal)) / denom;
+  }
+  return t;
+}
+
+double sphereIntersection(double* Ro, double* Rd, double* position, double radius){
+  double t;
+
+  double* RoSubPosition = subVector(Ro, position);
+  double b = 2 * dotProduct(Rd, RoSubPosition);
+  double c = dotProduct(RoSubPosition, RoSubPosition) - radius;
+
+  double sqrtDelta = sqrt(sqr(b) - 4 * c);
+
+  t = (-b - sqrtDelta) / 2;
+
+  if(t < 0){
+    t = (-b + sqrtDelta) / 2;
+  }
+
+  return t;
+}
+
 int main(int argc, char *argv[]){
   if(argc < 5){
     fprintf(stderr, "Error: Expected ./raycaster width height input.json output.ppm");
-    exit(10);
+    exit(ERROR_RAYCAST);
   }
 
   double centerX = 0;
@@ -52,14 +80,39 @@ int main(int argc, char *argv[]){
       double Rx = centerX - (camWidth/2) + pixWidth * (x+0.5);
       double Ry = centerY - (camHeight/2) + pixHeight * (y+0.5);
       double* Rd = getVector(Rx, Ry, 1);
+      //printf("Rd : %lf  %lf  %lf\n", Rd[0], Rd[1], Rd[2]);
       normalize(Rd);
+      //printf("Rd : %lf  %lf  %lf\n", Rd[0], Rd[1], Rd[2]);
       double bestT = INFINITY;
-      while (list != NULL) {
+      objectList tempList = list;
+      while (tempList != NULL) {
         double t=0;
 
-        //Intersection
+        switch (tempList->kind) {
+          case 0:
+            t = sphereIntersection(Ro, Rd, tempList->position, tempList->sphere.radius);
+            break;
+          case 1:
+            t = planeIntersection(Ro, Rd, tempList->position, tempList->plane.normal);
+            break;
+          default:
+            fprintf(stderr, "Error: Object of kind unknow (How is it even possible ?)");
+            exit(ERROR_RAYCAST);
+        }
+
+        if(t > 0 && t < bestT){
+          bestT = t;
+        }
+        tempList = tempList->next;
+      }
+      if(bestT > 0 && bestT != INFINITY){
+        printf("#");
+      }
+      else{
+        printf(".");
       }
     }
+    printf("\n");
   }
 
   //FILE* outputFile = fopen(argv[4], "w");
