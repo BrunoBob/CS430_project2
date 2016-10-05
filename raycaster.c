@@ -1,6 +1,7 @@
 #include "json_parser.h"
 #include "raycaster.h"
 
+//Print all object detected in json file
 void printObjects(objectList list){
   while(list != NULL){
     if(list->kind == 0){
@@ -20,6 +21,8 @@ void printObjects(objectList list){
   }
 }
 
+
+//Compute if interserction with a plane
 double planeIntersection(double* Ro, double* Rd, double* position, double* normal){
   double t = 0;
   normalize(normal); //Just in case
@@ -30,6 +33,7 @@ double planeIntersection(double* Ro, double* Rd, double* position, double* norma
   return t;
 }
 
+//Compute if interserction with a sphere
 double sphereIntersection(double* Ro, double* Rd, double* position, double radius){
   double t;
 
@@ -48,10 +52,24 @@ double sphereIntersection(double* Ro, double* Rd, double* position, double radiu
   return t;
 }
 
+
+//Write the data in a P6 ppm file
 void createScene(char* ppm, unsigned char* data, int width, int height){
   FILE* outputFile = fopen(ppm, "w");
-  fprintf(outputFile, "P6\n#Wrtitten by raycaster program made by Bruno TESSIER\n%d %d\n255\n", width, height);
-  fwrite(data, sizeof(char), width * height * 3, outputFile);
+
+  if (outputFile == NULL) {
+    fprintf(stderr, "Error: Could not open file \"%s\"\n", ppm);
+    exit(ERROR_WRITING);
+  }
+
+  if(fprintf(outputFile, "P6\n#Written by raycaster program made by Bruno TESSIER\n%d %d\n255\n", width, height) < 63){
+    fprintf(stderr, "Error: Could not write header in file \"%s\"\n", ppm);
+    exit(ERROR_WRITING);
+  }
+  if(fwrite(data, sizeof(char), width * height * 3, outputFile) != (width * height * 3)){
+    fprintf(stderr, "Error: Could not write data in file \"%s\"\n", ppm);
+    exit(ERROR_WRITING);
+  }
   fclose(outputFile);
 }
 
@@ -130,15 +148,7 @@ int main(int argc, char *argv[]){
   }
 
   createScene(argv[4], data, width, height);
-  /*int v,w;
-  for(v = height -1 ; v >=0 ; v--){
-    for(w = 0 ; w < width ; w++){
-      printf("[%d,%d,%d]", data[3*(w + width*v)], data[3*(w + width*v)+1], data[3*(w + width*v)+2]);
-    }
-    printf("\n");
-  }*/
-  //FILE* outputFile = fopen(argv[4], "w");
-
+  free(data);
 
   return 0;
 }

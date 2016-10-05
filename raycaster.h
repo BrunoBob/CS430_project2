@@ -6,6 +6,7 @@
 #include <math.h>
 
 #define ERROR_RAYCAST 2
+#define ERROR_WRITING 3
 
 typedef struct object{
   int kind; // 0 = sphere, 1 = plane
