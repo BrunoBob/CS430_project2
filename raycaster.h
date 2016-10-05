@@ -24,6 +24,8 @@ typedef struct object{
 
 void printObjects(objectList list);
 
+void createScene(char* ppm, unsigned char* data, int width, int height);
+
 double planeIntersection(double* Ro, double* Rd, double* position, double* normal);
 
 double sphereIntersection(double* Ro, double* Rd, double* position, double radius);

@@ -48,6 +48,13 @@ double sphereIntersection(double* Ro, double* Rd, double* position, double radiu
   return t;
 }
 
+void createScene(char* ppm, unsigned char* data, int width, int height){
+  FILE* outputFile = fopen(ppm, "w");
+  fprintf(outputFile, "P6\n#Wrtitten by raycaster program made by Bruno TESSIER\n%d %d\n255\n", width, height);
+  fwrite(data, sizeof(char), width * height * 3, outputFile);
+  fclose(outputFile);
+}
+
 int main(int argc, char *argv[]){
   if(argc < 5){
     fprintf(stderr, "Error: Expected ./raycaster width height input.json output.ppm");
@@ -72,6 +79,8 @@ int main(int argc, char *argv[]){
   printf("\nCamera : width = %lf\theight = %lf\n\n", camWidth, camHeight);
   printObjects(list);
 
+  unsigned char* data = (unsigned char*)malloc(width * height * 3 * sizeof(unsigned char));
+
   int x,y;
 
   for(y = 0; y < height ; y++){
@@ -80,11 +89,12 @@ int main(int argc, char *argv[]){
       double Rx = centerX - (camWidth/2) + pixWidth * (x+0.5);
       double Ry = centerY - (camHeight/2) + pixHeight * (y+0.5);
       double* Rd = getVector(Rx, Ry, 1);
-      //printf("Rd : %lf  %lf  %lf\n", Rd[0], Rd[1], Rd[2]);
+
       normalize(Rd);
-      //printf("Rd : %lf  %lf  %lf\n", Rd[0], Rd[1], Rd[2]);
+
       double bestT = INFINITY;
       objectList tempList = list;
+      double *pixel;
       while (tempList != NULL) {
         double t=0;
 
@@ -102,19 +112,31 @@ int main(int argc, char *argv[]){
 
         if(t > 0 && t < bestT){
           bestT = t;
+          pixel = tempList->color;
         }
         tempList = tempList->next;
       }
       if(bestT > 0 && bestT != INFINITY){
-        printf("#");
+        data[ 3 * (x + width * (height - 1 - y))] = pixel[0] * 255;
+        data[ 3 * (x + width * (height - 1 - y)) + 1] = pixel[1] * 255;
+        data[ 3 * (x + width * (height - 1 - y)) + 2] = pixel[2] * 255;
       }
       else{
-        printf(".");
+        data[ 3 * (x + width * (height - 1 - y))] = 0;
+        data[ 3 * (x + width * (height - 1 - y)) + 1] = 0;
+        data[ 3 * (x + width * (height - 1 - y)) + 2] = 0;
       }
     }
-    printf("\n");
   }
 
+  createScene(argv[4], data, width, height);
+  /*int v,w;
+  for(v = height -1 ; v >=0 ; v--){
+    for(w = 0 ; w < width ; w++){
+      printf("[%d,%d,%d]", data[3*(w + width*v)], data[3*(w + width*v)+1], data[3*(w + width*v)+2]);
+    }
+    printf("\n");
+  }*/
   //FILE* outputFile = fopen(argv[4], "w");
 
 
